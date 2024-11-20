@@ -11,7 +11,7 @@ import SwiftData
 //struct Delivery: Decodable, Identifiable {
 //    let id: String
 //    let remarks: String
-//    let pickupTime: String  
+//    let pickupTime: String
 //    let goodsPicture: String
 //    let deliveryFee: String
 //    let surcharge: String
@@ -19,53 +19,49 @@ import SwiftData
 //    let sender: Sender
 //}
 
-struct DeliveryResponse: Decodable {
-    let request: [Delivery]
-}
-
-struct MockDeliveryData {
-    static let sampleDeliveries = [
-        Delivery(
-            id: "5dd5f3a7156bae72fa5a5d6c",
-            remarks: "Minim veniam minim nisi ullamco consequat anim reprehenderit laboris aliquip voluptate sit.",
-            pickupTime: "2014-10-06T10:45:38-08:00",
-            goodsPicture: "https://loremflickr.com/320/240/cat?lock=9953",
-            deliveryFee: "$92.14",
-            surcharge: "$136.46",
-            route: Route(
-                start: "Noble Street",
-                end: "Montauk Court"
-            ),
-            sender: Sender(
-                name: "Harding Welch",
-                phone: "+1 (899) 523-3905",
-                email: "hardingwelch@comdom.com"
-            )
-        ),
-        Delivery(
-            id: "5dd5f3a787c49789dca0b43f",
-            remarks: "Minim deserunt nisi qui veniam est amet pariatur voluptate ea est exercitation cupidatat sit ea.",
-            pickupTime: "2018-11-22T07:06:05-08:00",
-            goodsPicture: "https://loremflickr.com/320/240/cat?lock=28542",
-            deliveryFee: "$104.23",
-            surcharge: "$288.13",
-            route: Route(
-                start: "Henry Street",
-                end: "Clinton Street"
-            ),
-            sender: Sender(
-                name: "Kendra Guthrie",
-                phone: "+1 (942) 512-3379",
-                email: "kendraguthrie@comdom.com"
-            )
-        )
-    ]
-}
+//struct MockDeliveryData {
+//    static let sampleDeliveries = [
+//        Delivery(
+//            id: "5dd5f3a7156bae72fa5a5d6c",
+//            remarks: "Minim veniam minim nisi ullamco consequat anim reprehenderit laboris aliquip voluptate sit.",
+//            pickupTime: "2014-10-06T10:45:38-08:00",
+//            goodsPicture: "https://loremflickr.com/320/240/cat?lock=9953",
+//            deliveryFee: "$92.14",
+//            surcharge: "$136.46",
+//            route: Route(
+//                start: "Noble Street",
+//                end: "Montauk Court"
+//            ),
+//            sender: Sender(
+//                name: "Harding Welch",
+//                phone: "+1 (899) 523-3905",
+//                email: "hardingwelch@comdom.com"
+//            )
+//        ),
+//        Delivery(
+//            id: "5dd5f3a787c49789dca0b43f",
+//            remarks: "Minim deserunt nisi qui veniam est amet pariatur voluptate ea est exercitation cupidatat sit ea.",
+//            pickupTime: "2018-11-22T07:06:05-08:00",
+//            goodsPicture: "https://loremflickr.com/320/240/cat?lock=28542",
+//            deliveryFee: "$104.23",
+//            surcharge: "$288.13",
+//            route: Route(
+//                start: "Henry Street",
+//                end: "Clinton Street"
+//            ),
+//            sender: Sender(
+//                name: "Kendra Guthrie",
+//                phone: "+1 (942) 512-3379",
+//                email: "kendraguthrie@comdom.com"
+//            )
+//        )
+//    ]
+//}
 
 @Model
 class Delivery: Decodable {
     @Attribute(.unique)
-    var id = UUID().uuidString
+    var id: String
     var remarks: String
     var pickupTime: String
     var goodsPicture: String
@@ -85,9 +81,20 @@ class Delivery: Decodable {
         case sender
     }
     
+    init() {
+        self.id = UUID().uuidString
+        self.remarks = ""
+        self.pickupTime = ""
+        self.goodsPicture = ""
+        self.deliveryFee = ""
+        self.surcharge = ""
+        self.route = Route()
+        self.sender = Sender()
+    }
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
+        self.id = try container.decode(String.self, forKey: .id)
         remarks = try container.decode(String.self, forKey: .remarks)
         pickupTime = try container.decode(String.self, forKey: .pickupTime)
         goodsPicture = try container.decode(String.self, forKey: .goodsPicture)
@@ -97,16 +104,7 @@ class Delivery: Decodable {
         sender = try container.decode(Sender.self, forKey: .sender)
     }
     
-    init(
-        id: String,
-        remarks: String,
-        pickupTime: String,
-        goodsPicture: String,
-        deliveryFee: String,
-        surcharge: String,
-        route: Route,
-        sender: Sender
-    ) {
+    init(id: String, remarks: String, pickupTime: String, goodsPicture: String, deliveryFee: String, surcharge: String, route: Route, sender: Sender) {
         self.id = id
         self.remarks = remarks
         self.pickupTime = pickupTime
@@ -126,6 +124,11 @@ class Route: Decodable {
     enum CodingKeys: String, CodingKey {
         case start
         case end
+    }
+    
+    init() {
+        self.start = ""
+        self.end = ""
     }
     
     required init(from decoder: Decoder) throws {
@@ -152,6 +155,12 @@ class Sender: Decodable {
         case email
     }
     
+    init() {
+        self.name = ""
+        self.phone = ""
+        self.email = ""
+    }
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.name = try container.decode(String.self, forKey: .name)
@@ -167,21 +176,16 @@ class Sender: Decodable {
 }
 
 @Model
-class Favorite: Decodable {
+class Favorite {
     @Attribute(.unique)
     var id = UUID().uuidString
-    var deliveryId: String
+    @Relationship var delivery: Delivery?
     
-    enum CodingKeys: String, CodingKey {
-        case deliveryId
+    init() {
+        self.delivery = nil
     }
     
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.deliveryId = try container.decode(String.self, forKey: .deliveryId)
-    }
-    
-    init(deliveryId: String) {
-        self.deliveryId = deliveryId
+    init(delivery: Delivery) {
+        self.delivery = delivery
     }
 }

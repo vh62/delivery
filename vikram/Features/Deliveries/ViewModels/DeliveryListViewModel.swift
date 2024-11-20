@@ -64,8 +64,14 @@ class DeliveryListViewModel {
         
         do {
             let newDeliveries = try await deliveryService.getDeliveries(page: currentPage, limit: itemsPerPage)
-            newDeliveries.forEach { delivery in
-                modelContext.insert(delivery)
+            
+            let descriptor = FetchDescriptor<Delivery>()
+            let existingDeliveries = try modelContext.fetch(descriptor)
+            let existingIds = Set(existingDeliveries.map { $0.id })
+            for delivery in newDeliveries {
+                if !existingIds.contains(delivery.id) {
+                    modelContext.insert(delivery)
+                }
             }
             fetchDeliveryData()
             print(deliveries)
@@ -78,17 +84,17 @@ class DeliveryListViewModel {
     }
     
     func toggleFavorite(_ delivery: Delivery) {
-        if let favourite = favorites.first(where: { $0.deliveryId == delivery.id }) {
+        if let favourite = favorites.first(where: { $0.delivery?.id == delivery.id }) {
             modelContext.delete(favourite)
         } else {
             print("inserting favorite")
-            modelContext.insert(Favorite(deliveryId: delivery.id))
+            modelContext.insert(Favorite(delivery: delivery))
         }
         fetchfavoriteData()
     }
     
     func isFavorite(_ delivery: Delivery) -> Bool {
-        return favorites.contains(where: { $0.deliveryId == delivery.id })
+        return favorites.contains(where: { $0.delivery?.id == delivery.id })
     }
     
     func clearDataInLocalStorage() {
